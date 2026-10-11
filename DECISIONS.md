@@ -1,0 +1,17 @@
+# DECISIONS.md
+
+## 1. How does the system remember the story at Episode 150?
+
+The system uses layered memory rather than placing the entire story in every prompt. The **Story Bible** stores durable canon: the premise, characters, relationships, world rules, central mystery, and important facts. The **200-episode arc** provides the long-term plan, including each episode's beat. For a new episode, the context builder combines the relevant episode beat with the Story Bible, active facts and human decisions, recent episode context, and retrieved historical material from ChromaDB. Episode summaries and extracted facts provide a compact record of what happened, while retrieval brings back older details when they are relevant. This keeps prompts bounded while preserving access to earlier events. Retrieval is not guaranteed to find every relevant detail, so critical canon and active decisions should be explicitly included rather than relying on vector search alone.
+
+## 2. Where does the human step in, and why there?
+
+Human review occurs at two high-impact points. First, the user approves the Story Bible/arc before episode generation, preventing a flawed premise or long-term structure from propagating through 200 episodes. Second, the user reviews each episode and can approve, edit, or reject it; feedback can guide future episodes. Retroactive editing is available when a previously established event or fact must change. These checkpoints balance quality and cost: human attention is focused on the long-term plan and generated story content, while routine drafting and state extraction are automated. Feedback is stored as a story decision so later generation can use it.
+
+## 3. How does the system detect inconsistency or repetition before a human has to?
+
+Each episode passes through a continuity-validation step before it is presented for review. The workflow extracts a structured summary, facts introduced and used, character changes, plot threads advanced, and the ending hook. The system can compare the draft against its planned beat and available story context, and can use retrieved history to surface relevant earlier events. This is an automated warning mechanism, not a proof of consistency. Repetition can be reduced by providing the episode's purpose, recent summaries, prior beats, and active threads to the planner/writer; stronger repetition detection would compare new episode summaries against prior summaries using semantic similarity and flag near-duplicates for review.
+
+## 4. What breaks first as the story grows, and how would you fix it?
+
+The first pressure points are likely **retrieval quality, continuity drift, prompt size, and generation cost**. A vector search can miss a crucial old fact; summaries can omit details; and a retroactive change can affect many downstream episodes. I would improve this incrementally: (1) keep canonical facts and decisions in structured storage and retrieve them by entity, episode, and thread as well as semantic similarity; (2) evaluate retrieval with a curated set of questions and measure recall; (3) add duplicate/repetition checks and explicit word-count and hook validation; (4) make retroactive replay transactional, preserving the previous version until the full replay succeeds; and (5) add checkpoints, retries, and per-stage cost limits. This makes failures visible and recoverable instead of silently corrupting a long-running story.
