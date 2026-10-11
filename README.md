@@ -1,3 +1,5 @@
+# Please review the Decisions.md file for information about the Decisions made while development.
+
 # Serial Story Agent
 
 Runnable prototype for the 200-episode serial-story assignment.
